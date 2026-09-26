@@ -27,7 +27,7 @@ jobs:
           channel: 'stable'
 
       - name: Generate missing platform files
-        run: flutter create --platforms=android .
+        run: flutter create --platforms=android --project-name guuri_app .
 
       - name: Install Dependencies
         run: flutter pub get
