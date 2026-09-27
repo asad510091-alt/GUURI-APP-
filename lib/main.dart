@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'theme/app_theme.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const GuuriApp());
@@ -12,10 +14,8 @@ class GuuriApp extends StatelessWidget {
     return MaterialApp(
       title: 'GUURI',
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(title: const Text('GUURI Home')),
-        body: const Center(child: Text('Welcome to GUURI App')),
-      ),
+      theme: AppTheme.theme,
+      home: const LoginScreen(),
     );
   }
 }
