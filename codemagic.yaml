@@ -1,26 +1,32 @@
 workflows:
-  guuri-android:
+  guuri-android-workflow:
     name: GUURI Android Build
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       flutter: stable
+      vars:
+        PACKAGE_NAME: "com.guuri.app"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
     scripts:
-      - name: Generate Android platform files
-        script: |
-          flutter create --platforms=android .
       - name: Get Flutter packages
         script: |
           flutter pub get
-      - name: Build APK (debug)
+      - name: Build APK
         script: |
-          flutter build apk --debug
+          flutter build apk --release
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
+      - build/**/outputs/**/*.apk
     publishing:
       email:
         recipients:
-          - your-email@example.com
+        - asad510091@gmail.com
+        
         notify:
           success: true
           failure: true
