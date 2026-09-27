@@ -5,8 +5,10 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       flutter: stable
+      groups:
+        - default
       vars:
-        PACKAGE_NAME: "com.guuri.app"
+        PACKAGE_NAME: "com.guuri.guuri_app"
     triggering:
       events:
         - push
@@ -18,6 +20,18 @@ workflows:
         script: |
           if [ ! -d "android" ]; then
             flutter create . --platforms=android --org com.guuri
+          fi
+      - name: Push Android platform files to GitHub (if newly created)
+        script: |
+          if [ -d "android" ]; then
+            git config user.email "codemagic-bot@guuri.app"
+            git config user.name "Codemagic Bot"
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/asad510091-alt/GUURI-APP-.git
+            git add android
+            if ! git diff --cached --quiet; then
+              git commit -m "Add generated Android platform files [skip ci]"
+              git push origin HEAD:${CM_BRANCH}
+            fi
           fi
       - name: Get Flutter packages
         script: |
