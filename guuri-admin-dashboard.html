@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GUURI — Admin Dashboard</title>
+<style>
+  :root{
+    --ink:#132a20; --ink-soft:#5b6b62;
+    --sidebar:#0d2e21; --sidebar-hover:#154232; --sidebar-text:#bcd3c6;
+    --gold:#c9974a; --gold-soft:#f2e3c9;
+    --bg:#f6f4ee; --card:#ffffff; --line:#e7e2d6;
+    --ok:#1c8a55; --ok-bg:#e5f4ec;
+    --warn:#c98a2c; --warn-bg:#faf0dd;
+    --bad:#c14a4a; --bad-bg:#fbe9e9;
+    --sub:#3f6fb0; --sub-bg:#e8eff9;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    box-sizing:border-box;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#eae7de; --ink-soft:#a7b2ab;
+      --bg:#0f1512; --card:#16211b; --line:#233129;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#eae7de; --ink-soft:#a7b2ab;
+    --bg:#0f1512; --card:#16211b; --line:#233129;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Iowan Old Style','Georgia',serif;
+    min-height:100%;
+  }
+  h1,h2,h3{font-family:'Iowan Old Style','Georgia',serif; margin:0;}
+  .num{font-family:'Avenir Next','Helvetica Neue',Arial,sans-serif;}
+  .app{display:flex; min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    width:220px; background:var(--sidebar); color:var(--sidebar-text);
+    flex-shrink:0; padding:22px 14px; display:flex; flex-direction:column;
+    padding-top:calc(22px + env(safe-area-inset-top,0px));
+  }
+  .brand{display:flex; align-items:center; gap:10px; padding:0 8px 22px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:14px;}
+  .brand .mark{width:30px;height:30px;border-radius:50%;border:2px solid var(--gold); display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gold);}
+  .brand span{font-size:19px; letter-spacing:.03em; color:#fff;}
+  nav{display:flex; flex-direction:column; gap:2px; flex:1;}
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
+    cursor:pointer; font-size:14.5px; color:var(--sidebar-text); user-select:none;
+    font-family:'Avenir Next','Helvetica Neue',Arial,sans-serif;
+    border:none; background:none; width:100%; text-align:left;
+  }
+  .nav-item .ic{width:18px; text-align:center; opacity:.85;}
+  .nav-item:hover{background:var(--sidebar-hover); color:#fff;}
+  .nav-item.active{background:var(--gold); color:#12251c; font-weight:600;}
+  .sidebar-foot{font-size:12px; color:var(--sidebar-text); opacity:.6; padding:10px 8px 0; font-family:'Avenir Next',sans-serif;}
+
+  /* Main */
+  main{flex:1; min-width:0; padding:26px 30px 60px; padding-top:calc(26px + env(safe-area-inset-top,0px));}
+  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; gap:16px;}
+  .topbar h1{font-size:26px;}
+  .topbar .sub{font-family:'Avenir Next',sans-serif; font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  .admin{display:flex; align-items:center; gap:10px; font-family:'Avenir Next',sans-serif; font-size:13px; color:var(--ink-soft);}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-soft); color:#8a6a2d; display:flex;align-items:center;justify-content:center; font-weight:700; font-family:'Avenir Next',sans-serif;}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px;}
+  .stat-card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px;}
+  .stat-card .label{font-family:'Avenir Next',sans-serif; font-size:12.5px; color:var(--ink-soft); text-transform:none;}
+  .stat-card .value{font-size:28px; margin-top:6px; font-family:'Avenir Next',sans-serif; font-weight:700;}
+  .stat-card .delta{font-family:'Avenir Next',sans-serif; font-size:12px; margin-top:4px;}
+  .delta.up{color:var(--ok);} .delta.flat{color:var(--ink-soft);}
+
+  .grid2{display:grid; grid-template-columns:1.4fr 1fr; gap:16px; margin-bottom:22px;}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px;}
+  .panel h3{font-size:16px; margin-bottom:14px;}
+  .panel .cap{font-family:'Avenir Next',sans-serif; font-size:12px; color:var(--ink-soft); margin-bottom:2px;}
+
+  table{width:100%; border-collapse:collapse; font-family:'Avenir Next',sans-serif; font-size:13.5px;}
+  th{text-align:left; font-weight:600; color:var(--ink-soft); font-size:12px; padding:8px 10px; border-bottom:1px solid var(--line);}
+  td{padding:10px 10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:600;}
+  .badge.ok{background:var(--ok-bg); color:var(--ok);}
+  .badge.warn{background:var(--warn-bg); color:var(--warn);}
+  .badge.bad{background:var(--bad-bg); color:var(--bad);}
+  .badge.sub{background:var(--sub-bg); color:var(--sub);}
+  .link-btn{font-family:'Avenir Next',sans-serif; font-size:12.5px; color:var(--sub); background:none; border:none; cursor:pointer; padding:0;}
+
+  .activity{list-style:none; margin:0; padding:0; font-family:'Avenir Next',sans-serif; font-size:13px;}
+  .activity li{padding:9px 0; border-bottom:1px solid var(--line); color:var(--ink);}
+  .activity li:last-child{border-bottom:none;}
+  .activity .t{display:block; color:var(--ink-soft); font-size:11.5px; margin-top:2px;}
+
+  .placeholder{background:var(--card); border:1px dashed var(--line); border-radius:10px; padding:60px 20px; text-align:center; color:var(--ink-soft); font-family:'Avenir Next',sans-serif;}
+
+  .section{display:none;}
+  .section.active{display:block;}
+
+  .chart-wrap{overflow-x:auto;}
+  .bars{display:flex; align-items:flex-end; gap:10px; height:120px; margin-top:6px;}
+  .bar{flex:1; background:var(--gold); border-radius:4px 4px 0 0; position:relative;}
+  .bar span{position:absolute; bottom:-20px; left:0; right:0; text-align:center; font-family:'Avenir Next',sans-serif; font-size:11px; color:var(--ink-soft);}
+
+  @media (max-width:820px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%; flex-direction:row; align-items:center; overflow-x:auto; padding:12px 14px;}
+    .brand{border:none; margin:0; padding:0 12px 0 0;}
+    nav{flex-direction:row; gap:4px;}
+    .nav-item{white-space:nowrap;}
+    .sidebar-foot{display:none;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .grid2{grid-template-columns:1fr;}
+    main{padding:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">◍</div><span>GUURI</span></div>
+    <nav id="nav">
+      <button class="nav-item active" data-tab="dashboard"><span class="ic">▦</span>Dashboard</button>
+      <button class="nav-item" data-tab="applications"><span class="ic">▤</span>Applications</button>
+      <button class="nav-item" data-tab="customers"><span class="ic">◐</span>Customers</button>
+      <button class="nav-item" data-tab="partners"><span class="ic">◒</span>Financing Partners</button>
+      <button class="nav-item" data-tab="agreements"><span class="ic">▥</span>Agreements</button>
+      <button class="nav-item" data-tab="payments"><span class="ic">◇</span>Payments</button>
+      <button class="nav-item" data-tab="commissions"><span class="ic">◈</span>Commissions</button>
+      <button class="nav-item" data-tab="reports"><span class="ic">▧</span>Reports</button>
+      <button class="nav-item" data-tab="settings"><span class="ic">⚙</span>Settings</button>
+    </nav>
+    <div class="sidebar-foot">Guuri Admin · v1.0</div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h1 id="page-title">Dashboard</h1>
+        <div class="sub" id="page-sub">Overview of applications, partners and commissions</div>
+      </div>
+      <div class="admin"><div class="avatar">A</div>Admin Administrator</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section class="section active" id="dashboard">
+      <div class="stats">
+        <div class="stat-card"><div class="label">Total Applications</div><div class="value num" id="stat-total">–</div><div class="delta flat" id="stat-total-note">Connecting…</div></div>
+        <div class="stat-card"><div class="label">Approved</div><div class="value num" id="stat-approved" style="color:var(--ok)">–</div><div class="delta flat">Firestore: applications</div></div>
+        <div class="stat-card"><div class="label">Pending</div><div class="value num" id="stat-pending" style="color:var(--warn)">–</div><div class="delta flat">awaiting review</div></div>
+        <div class="stat-card"><div class="label">Rejected</div><div class="value num" id="stat-rejected" style="color:var(--bad)">–</div><div class="delta flat">this quarter</div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Applications overview</h3>
+          <div class="cap">Jan – Jul, submitted per month</div>
+          <div class="chart-wrap">
+            <svg viewBox="0 0 560 140" width="100%" height="140" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#c9974a" stroke-width="3"
+                points="10,110 100,90 190,100 280,60 370,45 460,30 550,15"/>
+              <g fill="#c9974a">
+                <circle cx="10" cy="110" r="4"/><circle cx="100" cy="90" r="4"/>
+                <circle cx="190" cy="100" r="4"/><circle cx="280" cy="60" r="4"/>
+                <circle cx="370" cy="45" r="4"/><circle cx="460" cy="30" r="4"/>
+                <circle cx="550" cy="15" r="4"/>
+              </g>
+            </svg>
+            <div style="display:flex; justify-content:space-between; font-family:'Avenir Next',sans-serif; font-size:11px; color:var(--ink-soft); padding:0 6px;">
+              <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Commission earned</h3>
+          <div class="cap">$12,450 · +12% from last month</div>
+          <div class="bars" style="margin-top:22px;">
+            <div class="bar" style="height:35%"><span>Feb</span></div>
+            <div class="bar" style="height:50%"><span>Mar</span></div>
+            <div class="bar" style="height:42%"><span>Apr</span></div>
+            <div class="bar" style="height:65%"><span>May</span></div>
+            <div class="bar" style="height:78%"><span>Jun</span></div>
+            <div class="bar" style="height:95%"><span>Jul</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Recent activity</h3>
+        <ul class="activity" id="activity-list">
+          <li>Waiting for Firestore data…<span class="t">—</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- APPLICATIONS -->
+    <section class="section" id="applications">
+      <div class="panel">
+        <h3>All applications</h3>
+        <table>
+          <thead><tr><th>ID</th><th>Applicant</th><th>Amount</th><th>Purpose</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="apps-tbody">
+            <tr><td colspan="6" style="color:var(--ink-soft); text-align:center; padding:24px 0;">Connecting to Firestore…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Generic placeholder sections -->
+    <section class="section" id="customers"><div class="placeholder">Customer records will appear here — name, contact, application history and documents.</div></section>
+    <section class="section" id="partners"><div class="placeholder">Financing partners will appear here — active partners, portfolio size and approval rates.</div></section>
+    <section class="section" id="agreements"><div class="placeholder">Signed financing agreements will appear here, with terms and signature status.</div></section>
+    <section class="section" id="payments"><div class="placeholder">Payment schedules and transaction history will appear here.</div></section>
+    <section class="section" id="commissions"><div class="placeholder">Commission breakdowns per partner and per period will appear here.</div></section>
+    <section class="section" id="reports"><div class="placeholder">Downloadable reports and analytics will appear here.</div></section>
+    <section class="section" id="settings"><div class="placeholder">Admin account, roles and notification settings will appear here.</div></section>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.5/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.5/firebase-firestore-compat.min.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAmvUbDt9qyCuMb6c4dQEeearGNqGTDTAQ",
+    authDomain: "guuri-feb8c.firebaseapp.com",
+    projectId: "guuri-feb8c",
+    storageBucket: "guuri-feb8c.firebasestorage.app",
+    messagingSenderId: "733158767244",
+    appId: "1:733158767244:web:d011a154e2fc43c3ed19a9",
+    measurementId: "G-E958DW731X"
+  };
+
+  let db = null;
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+  }catch(err){ console.error('Firebase init failed', err); }
+
+  function pick(data, keys, fallback){
+    for(const k of keys){ if(data[k] !== undefined && data[k] !== null && data[k] !== '') return data[k]; }
+    return fallback;
+  }
+  function statusBadge(raw){
+    const s = String(raw || '').toLowerCase();
+    if(s.includes('approv')) return '<span class="badge ok">Approved</span>';
+    if(s.includes('reject')) return '<span class="badge bad">Rejected</span>';
+    if(s.includes('review') || s.includes('pending')) return '<span class="badge warn">Pending</span>';
+    if(s.includes('submit')) return '<span class="badge sub">Submitted</span>';
+    return '<span class="badge sub">'+(raw || 'Unknown')+'</span>';
+  }
+  function fmtDate(v){
+    try{
+      if(v && v.toDate) v = v.toDate();
+      if(v instanceof Date) return v.toLocaleDateString();
+      if(typeof v === 'string') return v;
+    }catch(e){}
+    return '—';
+  }
+
+  async function loadApplications(){
+    const tbody = document.getElementById('apps-tbody');
+    const totalEl = document.getElementById('stat-total');
+    const noteEl = document.getElementById('stat-total-note');
+    const apEl = document.getElementById('stat-approved');
+    const peEl = document.getElementById('stat-pending');
+    const reEl = document.getElementById('stat-rejected');
+    const actList = document.getElementById('activity-list');
+
+    if(!db){
+      noteEl.textContent = 'Firebase not connected';
+      return;
+    }
+    try{
+      const snap = await db.collection('applications').get();
+      if(snap.empty){
+        tbody.innerHTML = '<tr><td colspan="6" style="color:var(--ink-soft); text-align:center; padding:24px 0;">Xog lama helin ilaa hadda — collection "applications" waa madhan.</td></tr>';
+        totalEl.textContent = '0'; apEl.textContent='0'; peEl.textContent='0'; reEl.textContent='0';
+        noteEl.textContent = 'No documents yet';
+        actList.innerHTML = '<li>No recent activity yet<span class="t">—</span></li>';
+        return;
+      }
+      let approved=0, pending=0, rejected=0;
+      let rows = '';
+      const activity = [];
+      snap.forEach(doc=>{
+        const d = doc.data();
+        const status = pick(d, ['status','applicationStatus'], 'submitted');
+        const s = String(status).toLowerCase();
+        if(s.includes('approv')) approved++;
+        else if(s.includes('reject')) rejected++;
+        else pending++;
+
+        const name = pick(d, ['applicantName','name','customerName'], '—');
+        const amount = pick(d, ['amount','requestedAmount'], null);
+        const purpose = pick(d, ['purpose','purposeOfFunds'], '—');
+        const date = fmtDate(pick(d, ['date','createdAt','submittedAt'], null));
+
+        rows += '<tr><td>'+doc.id+'</td><td>'+name+'</td><td class="num">'+(amount!==null ? '$'+Number(amount).toLocaleString() : '—')+'</td><td>'+purpose+'</td><td>'+statusBadge(status)+'</td><td>'+date+'</td></tr>';
+        activity.push('<li>Application '+doc.id+' — '+String(status)+'<span class="t">'+date+'</span></li>');
+      });
+      tbody.innerHTML = rows;
+      totalEl.textContent = snap.size;
+      apEl.textContent = approved;
+      peEl.textContent = pending;
+      reEl.textContent = rejected;
+      noteEl.textContent = 'Live from Firestore';
+      actList.innerHTML = activity.slice(0,6).join('') || '<li>No recent activity yet<span class="t">—</span></li>';
+    }catch(err){
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="6" style="color:var(--bad); text-align:center; padding:24px 0;">Khalad ayaa dhacay marka xogta la soo raadinayay. Hubi Firestore security rules.</td></tr>';
+      noteEl.textContent = 'Connection error';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadApplications);
+
+  const titles = {
+    dashboard:['Dashboard','Overview of applications, partners and commissions'],
+    applications:['Applications','Review and manage financing applications'],
+    customers:['Customers','Everyone who has applied for financing'],
+    partners:['Financing Partners','Partners providing Sharia-compliant financing'],
+    agreements:['Agreements','Signed financing agreements'],
+    payments:['Payments','Payment schedules and history'],
+    commissions:['Commissions','Earnings per partner and period'],
+    reports:['Reports','Analytics and exports'],
+    settings:['Settings','Admin preferences and access']
+  };
+  document.getElementById('nav').addEventListener('click', (e)=>{
+    const btn = e.target.closest('.nav-item');
+    if(!btn) return;
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    const tab = btn.dataset.tab;
+    document.getElementById(tab).classList.add('active');
+    document.getElementById('page-title').textContent = titles[tab][0];
+    document.getElementById('page-sub').textContent = titles[tab][1];
+  });
+</script>
+</body>
+</html>
