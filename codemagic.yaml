@@ -14,6 +14,11 @@ workflows:
         - pattern: main
           include: true
     scripts:
+      - name: Create Android platform files (if missing)
+        script: |
+          if [ ! -d "android" ]; then
+            flutter create . --platforms=android --org com.guuri
+          fi
       - name: Get Flutter packages
         script: |
           flutter pub get
@@ -25,8 +30,7 @@ workflows:
     publishing:
       email:
         recipients:
-        - asad510091@gmail.com
-        
+          - asad510091@gmail.com
         notify:
           success: true
           failure: true
