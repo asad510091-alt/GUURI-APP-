@@ -28,6 +28,11 @@ jobs:
       - name: Generate missing platform files
         run: flutter create --platforms=android --project-name guuri_app .
 
+      - name: Add INTERNET permission
+        run: |
+          grep -q "android.permission.INTERNET" android/app/src/main/AndroidManifest.xml || sed -i '2i\    <uses-permission android:name="android.permission.INTERNET"/>' android/app/src/main/AndroidManifest.xml
+          grep -n "INTERNET" android/app/src/main/AndroidManifest.xml
+
       - name: Install Dependencies
         run: flutter pub get
 
