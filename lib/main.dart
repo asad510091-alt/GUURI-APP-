@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'screens/auth.dart';
-import 'screens/home.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +28,7 @@ class GuuriApp extends StatelessWidget {
         colorSchemeSeed: Colors.green,
       ),
       home: Supabase.instance.client.auth.currentSession == null
-          ? const AuthScreen()
+          ? const LoginScreen()
           : const HomeScreen(),
     );
   }
