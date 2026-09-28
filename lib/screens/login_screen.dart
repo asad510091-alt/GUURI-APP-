@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/app_theme.dart';
-import 'otp_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,8 +10,63 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscure = true;
-  final _phoneController = TextEditingController(text: '+252 61 2345678');
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  Future<void> _signIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage('Geli email iyo password');
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      await Supabase.instance.client.auth
+          .signInWithPassword(email: email, password: password);
+    } on AuthException catch (e) {
+      _showMessage(e.message);
+    } catch (_) {
+      _showMessage('Khalad ayaa dhacay, isku day mar kale');
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _signUp() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.length < 6) {
+      _showMessage('Geli email iyo password (ugu yaraan 6 xaraf)');
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final res = await Supabase.instance.client.auth
+          .signUp(email: email, password: password);
+      if (res.session == null) {
+        _showMessage('Akoon waa la sameeyay. Hubi email-kaaga si aad u xaqiijiso.');
+      }
+    } on AuthException catch (e) {
+      _showMessage(e.message);
+    } catch (_) {
+      _showMessage('Khalad ayaa dhacay, isku day mar kale');
+    }
+    if (mounted) setState(() => _loading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 12),
               Icon(Icons.favorite, color: AppColors.gold, size: 32),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'GUURI',
                 style: TextStyle(
                   color: AppColors.primaryDark,
@@ -34,40 +89,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Isku xira Qoysaska\niyo Maalgelinta',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.textMuted, fontSize: 13),
               ),
-              const SizedBox(height: 28),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      child: const Text('Login'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      child: const Text('Register'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.email_outlined),
                 ),
               ),
               const SizedBox(height: 14),
               TextField(
+                controller: _passwordController,
                 obscureText: _obscure,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -80,65 +118,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text('Forgot Password?'),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _signIn,
+                  child: _loading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Login'),
                 ),
               ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const OtpScreen()),
-                  );
-                },
-                child: const Text('Login'),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: const [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('Or continue with',
-                        style: TextStyle(color: AppColors.textMuted)),
-                  ),
-                  Expanded(child: Divider()),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.g_mobiledata, size: 26),
-                      label: const Text('Google'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.apple),
-                      label: const Text('Apple'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Don't have an account? "),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                    child: const Text('Register'),
-                  ),
-                ],
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _loading ? null : _signUp,
+                  child: const Text('Register'),
+                ),
               ),
             ],
           ),
