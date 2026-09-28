@@ -8,8 +8,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url:https:'//bywhzjoairxegnfjelsn.supabase.co' ,
+    url: 'https://bywhzjoairxegnfjelsn.supabase.co',
+    anonKey: 'url:https:'//bywhzjoairxegnfjelsn.supabase.co' ,
     anonKey:'sb_publishable_gKLLjhx19Q-efOz...',
+  );
 
   runApp(const GuuriApp());
 }
@@ -26,9 +28,14 @@ class GuuriApp extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: Colors.green,
       ),
-      home: Supabase.instance.client.auth.currentSession == null
-          ? const LoginScreen()
-          : const HomeScreen(),
+      home: StreamBuilder<AuthState>(
+        stream: Supabase.instance.client.auth.onAuthStateChange,
+        builder: (context, snapshot) {
+          final session = snapshot.data?.session ??
+              Supabase.instance.client.auth.currentSession;
+          return session == null ? const LoginScreen() : const HomeScreen();
+        },
+      ),
     );
   }
 }
