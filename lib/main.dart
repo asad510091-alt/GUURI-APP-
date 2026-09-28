@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
-import 'theme/app_theme.dart';
-import 'screens/login_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+import 'screens/auth.dart';
+import 'screens/home.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'YOUR_SUPABASE_URL',
+    anonKey: 'YOUR_SUPABASE_ANON_KEY',
+  );
+
   runApp(const GuuriApp());
 }
 
@@ -12,10 +21,15 @@ class GuuriApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GUURI',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
-      home: const LoginScreen(),
+      title: 'GUURI',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.green,
+      ),
+      home: Supabase.instance.client.auth.currentSession == null
+          ? const AuthScreen()
+          : const HomeScreen(),
     );
   }
 }
